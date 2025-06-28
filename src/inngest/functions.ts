@@ -193,7 +193,7 @@ export const codeAgentFunction = inngest.createFunction(
         });
       }
 
-      prisma.message.create({
+      return await prisma.message.create({
         data: {
           projectId: event.data.projectId,
           content: result.state.data.summary,
