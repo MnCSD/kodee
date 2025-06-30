@@ -14,7 +14,7 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { PROJECT_TEMPLATES } from "./constants";
-import { ProjectList } from "./project-list";
+import { useClerk } from "@clerk/nextjs";
 
 const formSchema = z.object({
   value: z
@@ -26,7 +26,7 @@ const formSchema = z.object({
 export const ProjectForm = () => {
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
-
+  const clerk = useClerk();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,6 +43,10 @@ export const ProjectForm = () => {
         router.push(`/projects/${data.id}`);
       },
       onError: (error) => {
+        if (error.data?.code === "UNAUTHORIZED") {
+          clerk.openSignIn();
+        }
+
         toast.error(error.message);
       },
     })
