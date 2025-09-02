@@ -21,6 +21,12 @@ import {
 
 type FileCollection = { [path: string]: string };
 
+/**
+ * Returns the file extension (lowercased) to use as a language identifier, or "text" if none is found.
+ *
+ * @param filename - A file name or path; the substring after the last `.` is treated as the extension.
+ * @returns The lowercased extension without the leading dot, or `"text"` when the input has no extension.
+ */
 function getLanguageFromExtension(filename: string): string {
   const extension = filename.split(".").pop()?.toLowerCase();
   return extension || "text";
