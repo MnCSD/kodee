@@ -3,14 +3,28 @@ import { twMerge } from "tailwind-merge";
 
 import { type TreeItem } from "@/types";
 
+/**
+ * Normalize and merge CSS class name inputs into a single string suitable for Tailwind.
+ *
+ * Accepts the same inputs as `clsx` (strings, arrays, objects, etc.), normalizes them,
+ * and resolves Tailwind-specific class conflicts via `twMerge`.
+ *
+ * @param inputs - One or more class value(s) (strings, arrays, or objects) accepted by `clsx`
+ * @returns The resulting merged class string
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Convert a record of files to a tree structure.
- * @param files - Record of file paths to content
- * @returns Tree structure for TreeView component
+ * Convert a flat map of file paths into a nested TreeItem array for a TreeView.
+ *
+ * Builds a hierarchical representation where file path keys are split by `/`.
+ * Folder nodes become arrays with the folder name followed by their children;
+ * files become string leaf items. The file contents (map values) are ignored.
+ *
+ * @param files - Map from file path (e.g., "src/Button.tsx") to file content (ignored)
+ * @returns An array of TreeItem where files are strings and folders are `[name, ...children]`
  *
  * @example
  * Input: { "src/Button.tsx": "...", "README.md": "..." }
@@ -48,7 +62,19 @@ export function convertFilesToTreeItems(
     current[fileName] = null; // null indicates it's a file
   }
 
-  // Convert tree structure to TreeItem format
+  /**
+   * Convert an intermediate TreeNode into a TreeItem or array of TreeItems for a TreeView.
+   *
+   * Recursively transforms a nested TreeNode (where keys are folder or file names and
+   * values are either a child TreeNode or `null` for files) into the TreeItem format:
+   * - Files become string items (e.g., `"file.txt"`).
+   * - Folders become arrays whose first element is the folder name and remaining
+   *   elements are its children (e.g., `["folder", "child1", ["sub", "child2"]]`).
+   *
+   * @param node - A TreeNode representing a folder's contents (map of name → TreeNode | null).
+   * @param name - Optional name to use when the provided node is empty; returned as a leaf string.
+   * @returns A single TreeItem when `node` represents a single leaf (string or `[name, ...]`), otherwise an array of TreeItem for the node's children.
+   */
   function convertNode(node: TreeNode, name?: string): TreeItem[] | TreeItem {
     const entries = Object.entries(node);
 
